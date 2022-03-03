@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+        <title>Project #1 - Luxo Lamp</title>
+        <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+        }
+        #webgl {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        </style>
+    </head>
+    <body>
+        <canvas id="webgl"></canvas>
+    </body>
+<script type="module">
+import * as THREE from './module/three.module.js';
+import {OrbitControls} from './module/OrbitControls.js';
+import {GUI} from './module/dat.gui.module.js';
+
+function main() {
+    const canvas = document.querySelector('#webgl');
+    const renderer = new THREE.WebGLRenderer({canvas});
+    renderer.shadowMap.enabled = true;//turn on shadows in the renderer
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('black');
+
+    // room
+    const room = {width:30, height:20};
+    {
+        const cubeGeo = new THREE.BoxBufferGeometry(room.width, room.height, room.width);
+        const cubeMat = new THREE.MeshPhongMaterial({color: '#8AC'});
+        cubeMat.side = THREE.BackSide;
+        const mesh = new THREE.Mesh(cubeGeo, cubeMat);
+        mesh.position.set(0, room.height / 2, 0);
+        mesh.receiveShadow = true;//receive shadows in the room
+        scene.add(mesh);
+    }
+
+    // define the luxo lamp
+    const basicArmHeight = 5; // define the Arm Height
+    // base
+    const base = new THREE.Object3D();
+    {
+        scene.add(base);
+    }
+    
+    // baseMesh 
+    const baseMesh = {width:4, height:1, color:'red'};
+    {
+        baseMesh.mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(1, 1, 1),
+                                    new THREE.MeshPhongMaterial({color: baseMesh.color}));
+        base.add(baseMesh.mesh);
+    }
+    
+    // baseDisc
+    const baseDisc = new THREE.Object3D();
+    {
+        baseDisc.angle = 20;
+        base.add(baseDisc);
+    }
+    
+    // baseDiscMesh
+    const baseDiscMesh = {radius: 1, height: 0.2, color:'orange', segs:8};
+    {
+        baseDiscMesh.mesh = new THREE.Mesh( 
+                                new THREE.CylinderBufferGeometry(baseDiscMesh.radius, 
+                                    baseDiscMesh.radius, baseDiscMesh.height, baseDiscMesh.segs),
+                                new THREE.MeshPhongMaterial({color: baseDiscMesh.color}));
+        baseDisc.add(baseDiscMesh.mesh);
+    }
+
+    // baseGreenJoint
+    const baseGreenJoint = new THREE.Object3D();
+    {
+        baseGreenJoint.angle = -30;
+        baseDisc.add(baseGreenJoint);
+    }
+    // baseGreenJointMesh
+    const baseGreenJointMesh = {radius: 0.3, height: 1, color:'green', segs:8};
+    {
+        baseGreenJointMesh.mesh = new THREE.Mesh( 
+                                new THREE.CylinderBufferGeometry(baseGreenJointMesh.radius, 
+                                baseGreenJointMesh.radius, baseGreenJointMesh.height, baseGreenJointMesh.segs),
+                                new THREE.MeshPhongMaterial({color: baseGreenJointMesh.color}));
+        baseGreenJoint.add(baseGreenJointMesh.mesh);
+    }
+
+    // lowerBlueArm
+    const lowerBlueArm = new THREE.Object3D();
+    {
+        baseGreenJoint.add(lowerBlueArm);
+    }
+    // lowerBlueArmMesh
+    const lowerBlueArmMesh = {radius: 0.3, height: basicArmHeight, color:'blue', segs:8};
+    {
+        lowerBlueArmMesh.mesh = new THREE.Mesh( 
+                                new THREE.CylinderBufferGeometry(lowerBlueArmMesh.radius, 
+                                lowerBlueArmMesh.radius, lowerBlueArmMesh.height, lowerBlueArmMesh.segs),
+                                new THREE.MeshPhongMaterial({color: lowerBlueArmMesh.color}));
+        lowerBlueArm.add(lowerBlueArmMesh.mesh);
+    }
+
+    // middleGreenJoint
+    const middleGreenJoint = new THREE.Object3D();
+    {
+        middleGreenJoint.angle = 60;
+        lowerBlueArm.add(middleGreenJoint);
+    }
+    // middleGreenJointMesh
+    const middleGreenJointMesh = {radius: 0.3, height: 1, color:'green', segs:8};
+    {
+        middleGreenJointMesh.mesh = new THREE.Mesh( 
+                                new THREE.CylinderBufferGeometry(middleGreenJointMesh.radius, 
+                                middleGreenJointMesh.radius, middleGreenJointMesh.height, middleGreenJointMesh.segs),
+                                new THREE.MeshPhongMaterial({color: middleGreenJointMesh.color}));
+        middleGreenJoint.add(middleGreenJointMesh.mesh);
+    }
+
+    // upperBlueArm
+    const upperBlueArm = new THREE.Object3D();
+    {
+        middleGreenJoint.add(upperBlueArm);
+    }
+    // upperBlueArmMesh
+    const upperBlueArmMesh = {radius: 0.3, height: basicArmHeight, color:'blue', segs:8};
+    {
+        upperBlueArmMesh.mesh = new THREE.Mesh( 
+                                new THREE.CylinderBufferGeometry(upperBlueArmMesh.radius, 
+                                upperBlueArmMesh.radius, upperBlueArmMesh.height, upperBlueArmMesh.segs),
+                                new THREE.MeshPhongMaterial({color: upperBlueArmMesh.color}));
+        upperBlueArm.add(upperBlueArmMesh.mesh);
+    }
+
+    // headGreenJoint
+    const headGreenJoint = new THREE.Object3D();
+    {
+        headGreenJoint.angle = 30;
+        upperBlueArm.add(headGreenJoint);
+    }
+    // headGreenJointMesh
+    const headGreenJointMesh = {radius: 0.3, height: 1, color:'green', segs:8};
+    {
+        headGreenJointMesh.mesh = new THREE.Mesh( 
+                                new THREE.CylinderBufferGeometry(headGreenJointMesh.radius, 
+                                headGreenJointMesh.radius, headGreenJointMesh.height, headGreenJointMesh.segs),
+                                new THREE.MeshPhongMaterial({color: headGreenJointMesh.color}));
+        headGreenJoint.add(headGreenJointMesh.mesh);
+    }
+
+    // bulbLamp
+    const bulbLamp = new THREE.Object3D();
+    {
+        bulbLamp.angle = 90;
+        headGreenJoint.add(bulbLamp);
+    }
+    // bulbLampMesh
+    const bulbLampMesh = {radiusTop:1.5, radiusBottom:0.2, height: 2, color: 'silver',segs:8};
+    {
+        bulbLampMesh.mesh = new THREE.Mesh( 
+                                new THREE.CylinderBufferGeometry(bulbLampMesh.radiusTop, 
+                                bulbLampMesh.radiusBottom, bulbLampMesh.height, bulbLampMesh.segs),
+                                new THREE.MeshPhongMaterial({color: bulbLampMesh.color}));
+        bulbLamp.add(bulbLampMesh.mesh);
+    }
+
+    // bulb
+    const bulb = new THREE.Object3D();
+    {
+        bulbLamp.add(bulb);
+    }
+    // bulbMesh
+    const bulbMesh = {radius: 0.8, width: 16, height: 4, color: 'white'};
+    {
+        bulbMesh.mesh = new THREE.Mesh( 
+                                new THREE.SphereBufferGeometry(bulbMesh.radius, 
+                                bulbMesh.width, bulbMesh.height),
+                                new THREE.MeshPhongMaterial({color: bulbMesh.color}));
+        bulb.add(bulbMesh.mesh);
+    }
+
+    // bulbLight
+    const bulbLight = new THREE.Object3D();
+    {
+        bulbMesh.mesh.add(bulbLight);
+    }
+    // bulbLightMesh
+    const bulbLightMesh = {color: 'white', intensity: 1, angle: THREE.MathUtils.degToRad(30)};
+    {
+        bulbLightMesh.mesh = new THREE.SpotLight(bulbLightMesh.color, 
+                                bulbLightMesh.intensity);
+        bulbLightMesh.mesh.angle = bulbLightMesh.angle;
+        bulbLightMesh.mesh.target = bulbMesh.mesh;
+        bulbLightMesh.mesh.castShadow = true;//turn on shadows for the SpotLight
+        bulbLight.add(bulbLightMesh.mesh);
+    }
+
+    // bulbLightHelper
+    const bulbLightHelper = new THREE.Object3D();
+    {
+        scene.add(bulbLightHelper);
+    }
+    // bulbLightHeplerMesh
+    const bulbLightHelperMesh = {color: 'white'};
+    {
+        bulbLightHelperMesh.mesh = new THREE.SpotLightHelper(bulbLightMesh.mesh,
+                                        bulbLightHelperMesh.color);
+        bulbLightHelper.add(bulbLightHelperMesh.mesh);
+        bulbLightHelper.visible = false;//when show helper turned on, visible true
+    }
+
+    // 3D Models
+
+    // model MK1(TorusKnotGeometry)
+    const modelMarkOne = new THREE.Object3D();
+    {
+        scene.add(modelMarkOne);
+    }
+    const modelMarkOneMesh = {radius: 3, tube: 1, tubesegs: 30, radiassegs: 5, color: 'blue'};
+    {
+        modelMarkOneMesh.mesh = new THREE.Mesh(
+                                new THREE.TorusKnotGeometry(modelMarkOneMesh.radius, 
+                                modelMarkOneMesh.tube, modelMarkOneMesh.tubesegs, modelMarkOneMesh.radiassegs),
+                                new THREE.MeshPhongMaterial({color: modelMarkOneMesh.color}));
+        modelMarkOne.add(modelMarkOneMesh.mesh);
+        modelMarkOne.position.set(10, 5, -10);
+        modelMarkOneMesh.mesh.castShadow = true;
+        modelMarkOneMesh.mesh.receiveShadow = true;
+    }
+
+    // model MK2(DodecahedronGeometry)
+    const modelMarkTwo = new THREE.Object3D();
+    {
+        scene.add(modelMarkTwo);
+    }
+    const modelMarkTwoMesh = {radius: 2, detail: 0, color: 'purple'};
+    {
+        modelMarkTwoMesh.mesh = new THREE.Mesh(
+                                new THREE.DodecahedronGeometry(modelMarkTwoMesh.radius, 
+                                modelMarkTwoMesh.detail),
+                                new THREE.MeshPhongMaterial({color: modelMarkTwoMesh.color}));
+        modelMarkTwo.add(modelMarkTwoMesh.mesh);
+        modelMarkTwo.position.set(-7, 2.5, 8);
+        modelMarkTwoMesh.mesh.castShadow = true;
+        modelMarkTwoMesh.mesh.receiveShadow = true;
+    }
+
+    // model MK3(IcosahedronGeometry)
+    const modelMarkThree = new THREE.Object3D();
+    {
+        scene.add(modelMarkThree);
+    }
+    const modelMarkThreeMesh = {radius: 2, detail: 0, color: 'green'};
+    {
+        modelMarkThreeMesh.mesh = new THREE.Mesh(
+                                new THREE.IcosahedronGeometry(modelMarkThreeMesh.radius, 
+                                modelMarkThreeMesh.detail),
+                                new THREE.MeshPhongMaterial({color: modelMarkThreeMesh.color}));
+        modelMarkThree.add(modelMarkThreeMesh.mesh);
+        modelMarkThree.position.set(-3, 2.5, 8);
+        modelMarkThreeMesh.mesh.castShadow = true;
+        modelMarkThreeMesh.mesh.receiveShadow = true;
+    }
+
+    // model MK4(TorusGeometry)
+    const modelMarkFour = new THREE.Object3D();
+    {
+        scene.add(modelMarkFour);
+    }
+    const modelMarkFourMesh = {radius: 3, tube: 0.5, tubesegs: 10, radiassegs: 50, color: 'pink'};
+    {
+        modelMarkFourMesh.mesh = new THREE.Mesh(
+                                new THREE.TorusGeometry(modelMarkFourMesh.radius, 
+                                modelMarkFourMesh.tube, modelMarkFourMesh.tubesegs, modelMarkFourMesh.radiassegs),
+                                new THREE.MeshPhongMaterial({color: modelMarkFourMesh.color}));
+        modelMarkFour.add(modelMarkFourMesh.mesh);
+        modelMarkFour.position.set(-8, 5, -10);
+        modelMarkFourMesh.mesh.castShadow = true;
+        modelMarkFourMesh.mesh.receiveShadow = true;
+    }
+
+    // model MK5(SphereGeometry)
+    const modelMarkFive = new THREE.Object3D();
+    {
+        scene.add(modelMarkFive);
+    }
+    const modelMarkFiveMesh = {radius: 3, width: 20, height: 20, color: 'yellow'};
+    {
+        modelMarkFiveMesh.mesh = new THREE.Mesh(
+                                new THREE.SphereGeometry(modelMarkFiveMesh.radius, 
+                                modelMarkFiveMesh.width, modelMarkFiveMesh.height),
+                                new THREE.MeshPhongMaterial({color: modelMarkFiveMesh.color}));
+        modelMarkFive.add(modelMarkFiveMesh.mesh);
+        modelMarkFive.position.set(8, 5, 10);
+        modelMarkFiveMesh.mesh.castShadow = true;
+        modelMarkFiveMesh.mesh.receiveShadow = true;
+    }
+
+
+    function updateLuxo() {
+        //base location
+        base.position.y = baseMesh.height/2;
+        baseMesh.mesh.scale.set(baseMesh.width, baseMesh.height, baseMesh.width);
+
+        //baseDisc location
+        baseDisc.position.y = baseMesh.height/2;
+        baseDisc.rotation.y = THREE.MathUtils.degToRad(baseDisc.angle);
+        baseDiscMesh.mesh.position.y = baseDiscMesh.height/2;
+
+        //baseGreenJoint location
+        baseGreenJoint.position.y = baseDiscMesh.height;
+        baseGreenJoint.rotation.x = THREE.MathUtils.degToRad(baseGreenJoint.angle);
+        baseGreenJointMesh.mesh.rotation.z = THREE.MathUtils.degToRad(90);
+
+        //lowerBlueArm location
+        lowerBlueArmMesh.mesh.position.y = lowerBlueArmMesh.height/2;
+        lowerBlueArmMesh.mesh.scale.set(1, lowerBlueArmMesh.height/basicArmHeight, 1);
+
+        //middleGreenJoint location
+        middleGreenJoint.position.y = lowerBlueArmMesh.height;
+        middleGreenJoint.rotation.x = THREE.MathUtils.degToRad(middleGreenJoint.angle);
+        middleGreenJointMesh.mesh.rotation.z = THREE.MathUtils.degToRad(90);
+        
+        //uppserBlueArm location
+        upperBlueArmMesh.mesh.position.y = upperBlueArmMesh.height/2;
+        upperBlueArmMesh.mesh.scale.set(1, upperBlueArmMesh.height/basicArmHeight, 1);
+
+        //headGreenJoint location
+        headGreenJoint.position.y = upperBlueArmMesh.height;
+        headGreenJoint.rotation.x = THREE.MathUtils.degToRad(headGreenJoint.angle);
+        headGreenJointMesh.mesh.rotation.z = THREE.MathUtils.degToRad(90);
+
+        //bulbLamp location
+        bulbLamp.rotation.x = THREE.MathUtils.degToRad(bulbLamp.angle);
+        bulbLampMesh.mesh.position.y = bulbLampMesh.height/2;
+        
+        //bulb location
+        bulbMesh.mesh.position.y = bulbLampMesh.height;
+        bulbLightMesh.mesh.position.y = -bulbMesh.radius/2;
+
+        //bulb light helper
+        bulbLightHelperMesh.mesh.update();
+    }
+
+    class DegRadHelper {
+        constructor(obj, prop) {
+        this.obj = obj;
+        this.prop = prop;
+        }
+        get value() {
+        return THREE.MathUtils.radToDeg(this.obj[this.prop]);
+        }
+        set value(v) {
+        this.obj[this.prop] = THREE.MathUtils.degToRad(v);
+        }
+    }
+
+    updateLuxo();
+
+    {
+        const gui = new GUI();
+        let folder;
+        folder = gui.addFolder('base (red box)');
+        folder.add(base.position, 'x', -room.width/2, room.width/2, 1).name('x').onChange(updateLuxo);
+        folder.add(base.position, 'z', -room.width/2, room.width/2, 1).name('z').onChange(updateLuxo);
+        folder.add(baseMesh, 'height', 0.1, 2, 0.1).name('height').onChange(updateLuxo);
+        folder.open();
+
+        let folder2;
+        folder2 = gui.addFolder('arm (blue) lengths');
+        folder2.add(lowerBlueArmMesh, 'height', 2, 7, 0.1).name('lower').onChange(updateLuxo);
+        folder2.add(upperBlueArmMesh, 'height', 2, 7, 0.1).name('upper').onChange(updateLuxo);
+        folder2.open();
+
+        gui.add(baseDisc, 'angle', 0, 360, 1).name('angle (yellow)').onChange(updateLuxo);
+
+        let folder3;
+        folder3 = gui.addFolder('joint (green) angles');
+        folder3.add(baseGreenJoint, 'angle', -180, 180, 1).name('base').onChange(updateLuxo);
+        folder3.add(middleGreenJoint, 'angle', -180, 180, 1).name('middle').onChange(updateLuxo);
+        folder3.add(headGreenJoint, 'angle', -180, 180, 1).name('head').onChange(updateLuxo);
+        folder3.open();
+
+        let folder4;
+        folder4 = gui.addFolder('light bulb');
+        folder4.add(new DegRadHelper(bulbLightMesh.mesh, 'angle'), 'value', 10, 90, 1).name('angle').onChange(updateLuxo);
+        folder4.add(bulbLightHelper, 'visible').name('show helper').onChange(updateLuxo);
+        folder4.open();
+    }
+
+
+    {   // point light
+        const color = 0xFFFFFF;
+        const intensity = 0.5;
+        const light = new THREE.PointLight(color, intensity);
+        light.position.set(0, room.height, 0);
+        light.castShadow = true;//turn on shadows for the light
+        scene.add(light);
+        
+        const helper = new THREE.PointLightHelper(light);
+        scene.add(helper);
+    }
+    {   // an ambient light
+        const light = new THREE.AmbientLight('white', 0.3);
+        scene.add(light);
+    }
+
+
+    const fov = 45;
+    const aspect = 2;  // the canvas default
+    const near = 0.1;
+    const far = 100;
+    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    camera.position.set(0, room.height*0.5, room.width*1.4);
+    
+    const controls = new OrbitControls(camera, canvas);
+    controls.target.set(0, room.height*0.5, 0);
+    controls.update();
+ 
+    function resizeRendererToDisplaySize(renderer) {
+        const canvas = renderer.domElement;
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if (needResize) {
+          renderer.setSize(width, height, false);
+        }
+        return needResize;
+    }
+    
+    function render() {
+    
+        if (resizeRendererToDisplaySize(renderer)) {
+          const canvas = renderer.domElement;
+          camera.aspect = canvas.clientWidth / canvas.clientHeight;
+          camera.updateProjectionMatrix();
+        }
+        
+        renderer.render(scene, camera);
+        
+        requestAnimationFrame(render);
+    }
+    
+    requestAnimationFrame(render);
+}
+
+main();
+</script>
+</html>
+
